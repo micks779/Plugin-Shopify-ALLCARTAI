@@ -1,18 +1,13 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
-// Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
-// enough when changing adapters.
-// See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
 datasource db {
-  provider = "sqlite"
-  url      = "file:dev.sqlite"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
+// Shopify Auth Sessions
 model Session {
   id            String    @id
   shop          String
@@ -30,3 +25,45 @@ model Session {
   collaborator  Boolean?  @default(false)
   emailVerified Boolean?  @default(false)
 }
+
+// Products listed via AllCartAI
+model Product {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  imageUrl    String?
+  price       Float
+  currency    String   @default("USD")
+  available   Boolean  @default(true)
+  shop        String   // Shopify store ID
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+/*
+Optional for future:
+
+// Orders placed through plugin
+model Order {
+  id          String   @id @default(uuid())
+  productId   String
+  customerEmail String
+  quantity    Int
+  totalPrice  Float
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  product     Product  @relation(fields: [productId], references: [id])
+}
+
+// Featured listing tracking
+model ListingFeature {
+  id          String   @id @default(uuid())
+  productId   String
+  priority    Int
+  startDate   DateTime
+  endDate     DateTime?
+  paid        Boolean  @default(false)
+}
+*/
