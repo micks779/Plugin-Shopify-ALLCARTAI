@@ -13,12 +13,24 @@ export const loader = async ({ request }) => {
   }
 
   try {
-    const response = await admin.rest.get({
-      path: "/products",
-      type: "json",
-      apiVersion: "2023-07",
-    });
-    return json(response.body.products);
+    const query = `
+      {
+        products(first: 10) {
+          edges {
+            node {
+              id
+              title
+              descriptionHtml
+              images(first: 1) { edges { node { src } } }
+              variants(first: 1) { edges { node { price } } }
+            }
+          }
+        }
+      }
+    `;
+    const response = await admin.graphql(query);
+    const products = response.body.data.products.edges.map(edge => edge.node);
+    return json(products);
   } catch (error) {
     console.error("Error fetching products:", error);
     return json({ error: error.message || "Failed to fetch products" }, { status: 500 });
