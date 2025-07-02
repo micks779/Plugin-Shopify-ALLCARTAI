@@ -4,7 +4,6 @@ import { authenticate } from "../shopify.server";
 export const loader = async ({ request }) => {
   const { session, admin } = await authenticate.admin(request);
 
-  // Add logging for debugging
   console.log("Session:", session);
   console.log("Admin:", admin);
 
@@ -28,11 +27,17 @@ export const loader = async ({ request }) => {
         }
       }
     `;
+
     const response = await admin.graphql(query);
-    const products = response.body.data.products.edges.map(edge => edge.node);
+    const responseBody = await response.json(); // ✅ Parse JSON properly
+
+    console.log("GraphQL response:", responseBody);
+
+    const products = responseBody.data.products.edges.map(edge => edge.node);
     return json(products);
+    
   } catch (error) {
     console.error("Error fetching products:", error);
     return json({ error: error.message || "Failed to fetch products" }, { status: 500 });
   }
-}; 
+};
