@@ -2,6 +2,12 @@ import { json } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
 
 export const loader = async ({ request }) => {
+  // Check API key in header
+  const apiKey = request.headers.get("x-api-key");
+  if (apiKey !== process.env.ALLCARTAI_API_KEY) {
+    return json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { session, admin } = await authenticate.admin(request);
 
   console.log("Session:", session);
